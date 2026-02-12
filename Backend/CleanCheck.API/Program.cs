@@ -4,6 +4,17 @@ using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. Permitir que Angular se conecte (CORS)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("NuevaPolitica", app =>
+    {
+        app.AllowAnyOrigin()
+           .AllowAnyHeader()
+           .AllowAnyMethod();
+    });
+});
+
 // 1. AGREGAR SERVICIOS (Antes del Build)
 builder.Services.AddControllers();
 
@@ -17,6 +28,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
+
+//  Activar la política
+app.UseCors("NuevaPolitica");
 
 // 2. CONFIGURAR EL PIPELINE (Después del Build)
 if (app.Environment.IsDevelopment())

@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { LoginComponent } from './pages/login/login';
+import { RouterOutlet } from '@angular/router'; // <--- 1. IMPORTAR ESTO
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [LoginComponent], // <--- Solo dejamos el Login
+  imports: [RouterOutlet], // <--- 2. AGREGARLO AQUÍ (y quita LoginComponent si estaba)
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
