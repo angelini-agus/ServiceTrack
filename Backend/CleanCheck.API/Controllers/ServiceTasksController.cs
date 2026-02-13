@@ -63,4 +63,19 @@ public class ServiceTasksController : ControllerBase
 
         return NoContent();
     }
+    // 4. BORRAR UNA TAREA (DELETE: api/ServiceTasks/5)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteServiceTask(int id)
+    {
+        var serviceTask = await _context.ServiceTasks.FindAsync(id);
+        if (serviceTask == null)
+        {
+            return NotFound();
+        }
+
+        _context.ServiceTasks.Remove(serviceTask);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }

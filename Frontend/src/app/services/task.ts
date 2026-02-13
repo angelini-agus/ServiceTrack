@@ -6,13 +6,24 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class TaskService {
-  // Asegúrate de que el puerto sea el mismo (7023)
   private apiUrl = 'https://localhost:7023/api/ServiceTasks'; 
 
   constructor(private http: HttpClient) { }
 
-  // Método para pedir la lista completa
   getTasks(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
+  }
+
+  createTask(task: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, task);
+  }
+
+  // NUEVO: AGREGAR ESTO
+  updateTask(id: number, task: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, task);
+  }
+
+  deleteTask(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 }
