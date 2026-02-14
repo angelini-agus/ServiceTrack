@@ -2,78 +2,116 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { HttpClientModule } from '@angular/common/http';
-// Asegúrate de que la ruta sea correcta (sin .service)
 import { TaskService } from '../../services/task'; 
+import { UserService } from '../../services/user';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, HttpClientModule, FormsModule],
-  // AQUÍ ESTÁ EL HTML (Dentro de este template)
   template: `
     <div class="container mt-5">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>📋 Gestión de Servicios</h1>
-        <button class="btn btn-success" (click)="showForm()">+ Nuevo Servicio</button>
+        <div>
+          <h1>📋 Mis Servicios</h1>
+          <p class="text-muted">Hola, <strong>{{ currentUser?.user }}</strong> ({{ currentUser?.role }})</p>
+        </div>
+        
+        <button *ngIf="isAdmin()" class="btn btn-success" (click)="showForm()">
+          + Nuevo Servicio
+        </button>
       </div>
 
-      <div *ngIf="isFormVisible" class="card p-3 mb-4 shadow-sm bg-light">
-        <h4>{{ newTask.id ? 'Editar Servicio' : 'Nuevo Servicio' }}</h4>
-        <div class="mb-2">
-          <label>Título:</label>
-          <input type="text" class="form-control" [(ngModel)]="newTask.title" placeholder="Ej: Limpieza Vidrios">
+      <div *ngIf="isFormVisible && isAdmin()" class="card p-4 mb-4 shadow-sm bg-light border-0">
+        <h4 class="mb-3">{{ newTask.id ? '✏️ Editar Servicio' : '✨ Nuevo Servicio' }}</h4>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Título:</label>
+            <input type="text" class="form-control" [(ngModel)]="newTask.title">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Asignar a:</label>
+            <select class="form-select" [(ngModel)]="newTask.assignedUserId">
+              <option [ngValue]="null">-- Sin Asignar --</option>
+              <option *ngFor="let user of users" [ngValue]="user.id">
+                👤 {{ user.fullName }}
+              </option>
+            </select>
+          </div>
         </div>
-        <div class="mb-2">
-          <label>Descripción:</label>
-          <textarea class="form-control" [(ngModel)]="newTask.description" placeholder="Detalles..."></textarea>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Fecha:</label>
+            <input type="date" class="form-control" [(ngModel)]="newTask.scheduledDate">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Ubicación:</label>
+            <input type="text" class="form-control" [(ngModel)]="newTask.location">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Descripción:</label>
+          <textarea class="form-control" rows="2" [(ngModel)]="newTask.description"></textarea>
         </div>
         
         <div class="form-check mb-3" *ngIf="newTask.id">
           <input class="form-check-input" type="checkbox" [(ngModel)]="newTask.isCompleted" id="checkCompleted">
-          <label class="form-check-label" for="checkCompleted">
-            Marcar como Completada
-          </label>
+          <label class="form-check-label" for="checkCompleted">✅ Marcar como Completada</label>
         </div>
 
-        <div class="d-flex gap-2 mt-3">
-          <button class="btn btn-primary" (click)="saveTask()">Guardar</button>
+        <div class="d-flex gap-2 justify-content-end">
           <button class="btn btn-secondary" (click)="hideForm()">Cancelar</button>
+          <button class="btn btn-primary" (click)="saveTask()">Guardar</button>
         </div>
       </div>
 
-      <div class="card shadow">
+      <div class="card shadow border-0">
         <div class="card-body p-0">
-          <table class="table table-hover mb-0">
+          <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
-                <th>ID</th>
-                <th>Tarea</th>
-                <th>Descripción</th>
+                <th>Fecha</th>
+                <th>Ubicación</th>
+                <th>Servicio</th>
+                <th>Asignado a</th>
                 <th>Estado</th>
-                <th>Acciones</th> </tr>
+                <th class="text-end" *ngIf="isAdmin()">Acciones</th>
+              </tr>
             </thead>
             <tbody>
               <tr *ngFor="let task of tasks">
-                <td>{{ task.id }}</td>
+                <td>{{ task.scheduledDate | date:'dd/MM/yyyy' }}</td>
+                <td><span *ngIf="task.location">📍 {{ task.location }}</span></td>
                 <td class="fw-bold">{{ task.title }}</td>
-                <td>{{ task.description }}</td>
+                
                 <td>
-                  <span class="badge" 
+                  <span *ngIf="task.assignedUserId" class="badge bg-info text-dark border border-info-subtle">
+                    👤 {{ getUserName(task.assignedUserId) }}
+                  </span>
+                  <span *ngIf="!task.assignedUserId" class="badge bg-secondary text-light opacity-50">Sin asignar</span>
+                </td>
+
+                <td>
+                  <span class="badge rounded-pill" 
                         [ngClass]="task.isCompleted ? 'bg-success' : 'bg-warning text-dark'">
-                    {{ task.isCompleted ? 'Completada' : 'Pendiente' }}
+                    {{ task.isCompleted ? 'Completado' : 'Pendiente' }}
                   </span>
                 </td>
-                <td>
-                  <button class="btn btn-sm btn-outline-primary" (click)="editTask(task)">
-                    ✏️ Editar
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger ms-2" (click)="deleteTask(task.id)">
-                    🗑️
-                  </button>
+
+                <td class="text-end" *ngIf="isAdmin()">
+                  <button class="btn btn-sm btn-outline-primary me-2" (click)="editTask(task)">✏️</button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteTask(task.id)">🗑️</button>
                 </td>
               </tr>
             </tbody>
           </table>
+          
+          <div *ngIf="tasks.length === 0" class="p-5 text-center text-muted">
+            <h4>📭 No tienes servicios asignados</h4>
+          </div>
         </div>
       </div>
     </div>
@@ -82,84 +120,117 @@ import { TaskService } from '../../services/task';
 })
 export class DashboardComponent implements OnInit {
   tasks: any[] = [];
+  users: any[] = [];
   isFormVisible: boolean = false;
-  newTask: any = { title: '', description: '' };
+  currentUser: any = null; // AQUÍ GUARDAMOS QUIÉN ESTÁ LOGUEADO
+  
+  newTask: any = { 
+    title: '', description: '', assignedUserId: null, location: '',
+    scheduledDate: new Date().toISOString().split('T')[0]
+  };
 
-  constructor(private taskService: TaskService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private taskService: TaskService, 
+    private userService: UserService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
-    this.loadTasks();
+    // 1. RECUPERAR USUARIO DEL STORAGE
+    const userJson = localStorage.getItem('currentUser');
+    if (userJson) {
+      this.currentUser = JSON.parse(userJson);
+      console.log('Usuario Logueado:', this.currentUser);
+    }
+    
+    this.loadData();
   }
 
-  loadTasks() {
+  // Helper para saber si soy admin (Simplifica el HTML)
+  isAdmin(): boolean {
+    return this.currentUser && this.currentUser.role === 'Admin';
+  }
+
+  loadData() {
+    // 1. Primero cargamos los usuarios (Es la lista que necesitamos para los nombres)
+    if (this.isAdmin()) {
+      this.userService.getUsers().subscribe({
+        next: (userData) => {
+          this.users = userData;
+          // Una vez que tenemos los usuarios, cargamos las tareas
+          this.fetchTasks();
+        },
+        error: (e) => console.error('Error cargando usuarios', e)
+      });
+    } else {
+      // Si es empleado, igual necesitamos los usuarios para ver el nombre propio
+      this.userService.getUsers().subscribe({
+        next: (userData) => {
+          this.users = userData;
+          this.fetchTasks();
+        }
+      });
+    }
+  }
+
+  // Creamos esta función aparte para limpiar el código
+  fetchTasks() {
     this.taskService.getTasks().subscribe({
-      next: (data) => {
-        this.tasks = data;
-        this.cdr.detectChanges();
-      }
+      next: (taskData) => {
+        if (this.isAdmin()) {
+          this.tasks = taskData;
+        } else {
+          this.tasks = taskData.filter(t => t.assignedUserId === this.currentUser.id);
+        }
+        // FORZAMOS a Angular a que se dé cuenta que ahora sí hay nombres
+        this.cdr.detectChanges(); 
+      },
+      error: (e) => console.error('Error cargando tareas', e)
     });
+  }
+
+  getUserName(userId: number): string {
+    if (!this.users || this.users.length === 0) return ''; // Quitamos los "..."
+    const user = this.users.find(u => u.id === userId);
+    return user ? user.fullName : 'Sin asignar';
   }
 
   showForm() {
     this.isFormVisible = true;
-    this.newTask = { title: '', description: '' };
+    this.newTask = { 
+      title: '', description: '', assignedUserId: null, location: '',
+      scheduledDate: new Date().toISOString().split('T')[0]
+    };
   }
 
-  hideForm() {
-    this.isFormVisible = false;
-  }
+  hideForm() { this.isFormVisible = false; }
 
-  // 1. CARGAR DATOS EN EL FORMULARIO
   editTask(task: any) {
-    this.newTask = { ...task }; // Hacemos una copia para editar tranquilo
+    this.newTask = { ...task };
+    if (this.newTask.scheduledDate) {
+      this.newTask.scheduledDate = this.newTask.scheduledDate.split('T')[0];
+    }
     this.isFormVisible = true;
   }
 
-  // 2. GUARDAR (INTELIGENTE: CREAR O EDITAR)
   saveTask() {
-    if (!this.newTask.title) {
-      alert('Por favor escribe un título');
-      return;
-    }
-
+    if (!this.newTask.title) return;
     if (this.newTask.id) {
-      // --- ES UNA EDICIÓN (TIENE ID) ---
-      this.taskService.updateTask(this.newTask.id, this.newTask).subscribe({
-        next: () => {
-          // Buscamos la tarea en la lista y la actualizamos visualmente
-          const index = this.tasks.findIndex(t => t.id === this.newTask.id);
-          if (index !== -1) {
-            this.tasks[index] = this.newTask;
-          }
-          this.hideForm();
-          this.cdr.detectChanges();
-        },
-        error: (e) => alert('Error al actualizar')
+      this.taskService.updateTask(this.newTask.id, this.newTask).subscribe(() => {
+        this.loadData();
+        this.hideForm();
       });
-
     } else {
-      // --- ES UNA TAREA NUEVA (NO TIENE ID) ---
-      this.taskService.createTask(this.newTask).subscribe({
-        next: (createdTask) => {
-          this.tasks.push(createdTask);
-          this.hideForm();
-          this.cdr.detectChanges();
-        },
-        error: (e) => alert('Error al crear')
+      this.taskService.createTask(this.newTask).subscribe(() => {
+        this.loadData();
+        this.hideForm();
       });
     }
   }
 
   deleteTask(id: number) {
-    if (confirm('¿Estás seguro de que quieres eliminar este servicio?')) {
-      this.taskService.deleteTask(id).subscribe({
-        next: () => {
-          // Si el backend dice OK, quitamos la tarea de la lista visualmente
-          this.tasks = this.tasks.filter(t => t.id !== id);
-          this.cdr.detectChanges();
-        },
-        error: (e) => alert('Error al eliminar')
-      });
+    if (confirm('¿Borrar?')) {
+      this.taskService.deleteTask(id).subscribe(() => this.loadData());
     }
   }
 }
