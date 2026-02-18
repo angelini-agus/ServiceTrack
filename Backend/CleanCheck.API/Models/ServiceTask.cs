@@ -20,4 +20,8 @@ public class ServiceTask
 
     public DateTime ScheduledDate { get; set; } = DateTime.Today; // Por defecto: Hoy
     public string Location { get; set; } = string.Empty; // Ej: "Torre A - Piso 3"
+
+    // --- NUEVOS CAMPOS DE GEOLOCALIZACIÓN ---
+    public double Latitude { get; set; }  // Ej: -32.94682
+    public double Longitude { get; set; } // Ej: -60.63932
 }
