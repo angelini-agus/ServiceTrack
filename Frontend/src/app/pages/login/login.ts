@@ -48,7 +48,9 @@ export class LoginComponent {
     this.errorMessage = '';
 
     // 2. Enviamos al Backend
-    this.http.post('https://localhost:7023/api/Auth/login', this.loginObj).subscribe({
+    //this.http.post('https://localhost:7023/api/Auth/login', this.loginObj).subscribe({
+    // OJO: Es http (sin la 's') y puerto 5000
+    this.http.post('http://192.168.100.222:5000/api/Auth/login', this.loginObj).subscribe({
       next: (res: any) => {
         // SI TODO SALE BIEN:
         console.log('Respuesta del Login:', res);

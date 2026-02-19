@@ -6,8 +6,9 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'https://localhost:7023/api/Users'; // La ruta del nuevo controlador
+  private apiUrl = 'http://192.168.100.222:5000/api/Users'; // La ruta del nuevo controlador
 
+  //private apiUrl = 'https://localhost:7023/api/Users';
   constructor(private http: HttpClient) { }
 
   getUsers(): Observable<any[]> {

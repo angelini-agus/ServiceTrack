@@ -7,12 +7,10 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Permitir que Angular se conecte (CORS)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("NuevaPolitica", app =>
-    {
-        app.AllowAnyOrigin()
-           .AllowAnyHeader()
-           .AllowAnyMethod();
-    });
+    options.AddPolicy("AllowAll", builder =>
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader());
 });
 
 // 1. AGREGAR SERVICIOS (Antes del Build)
@@ -41,8 +39,9 @@ if (app.Environment.IsDevelopment())
     // ------------------------------------------------
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+app.UseCors("AllowAll");
 
 app.Run();

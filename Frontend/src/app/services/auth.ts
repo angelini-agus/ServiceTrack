@@ -7,8 +7,8 @@ import { Observable } from 'rxjs';
 })
 export class AuthService {
   // Asegúrate de que este puerto sea el de tu Swagger (7023)
-  private apiUrl = 'https://localhost:7023/api/Auth'; 
-
+  private apiUrl = 'http://192.168.100.222:5000/api/Auth';
+  //private apiUrl = 'https://localhost:7023/api/Auth';
   constructor(private http: HttpClient) { }
 
   login(credentials: any): Observable<any> {
