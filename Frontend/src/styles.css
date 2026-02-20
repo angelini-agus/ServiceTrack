@@ -1,1 +1,45 @@
 /* You can add global styles to this file, and also import other style files */
+/* ESTILOS GLOBALES PARA TODA LA APP */
+/* VARIABLES MODO CLARO (POR DEFECTO) */
+:root {
+  --bg-gradient: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-panel: rgba(255, 255, 255, 0.95);
+  --text-main: #212529;
+  --text-muted: #6c757d;
+  --bg-input: #ffffff;
+  --border-color: rgba(0,0,0,0.1);
+}
+
+/* VARIABLES MODO OSCURO */
+[data-theme="dark"] {
+  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); /* Azul noche profundo */
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-panel: rgba(15, 23, 42, 0.95);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --bg-input: rgba(15, 23, 42, 0.6);
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ESTILOS DEL BODY (Con transición suave) */
+html, body {
+  margin: 0; padding: 0; height: 100%; width: 100%;
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--text-main);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* CLASES ADAPTATIVAS PARA BOOTSTRAP */
+.theme-text { color: var(--text-main) !important; }
+.theme-text-muted { color: var(--text-muted) !important; }
+.theme-bg { background-color: var(--bg-input) !important; color: var(--text-main) !important; }
+.theme-border { border-color: var(--border-color) !important; }
+
+/* SWEETALERT EN MODO OSCURO */
+[data-theme="dark"] .swal2-popup { background: #1e293b !important; color: #f8fafc !important; }
+[data-theme="dark"] .swal2-title, [data-theme="dark"] .swal2-html-container { color: #f8fafc !important; }

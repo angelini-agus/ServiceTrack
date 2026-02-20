@@ -33,6 +33,7 @@
     "angularx-qrcode": "^21.0.4",
     "bootstrap": "^5.3.8",
     "rxjs": "~7.8.0",
+    "sweetalert2": "^11.26.19",
     "tslib": "^2.3.0"
   },
   "devDependencies": {

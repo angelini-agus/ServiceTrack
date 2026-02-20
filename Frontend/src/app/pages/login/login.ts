@@ -1,74 +1,103 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
+import { ThemeService } from '../../services/theme.service'; // IMPORTAMOS EL SERVICIO
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule], // Importante: HttpClientModule
+  imports: [CommonModule, FormsModule, HttpClientModule],
   template: `
-    <div class="container d-flex justify-content-center align-items-center vh-100">
-      <div class="card p-4 shadow-lg" style="width: 350px;">
-        <h2 class="text-center mb-4">CleanCheck</h2>
+    <button class="btn theme-bg theme-border position-fixed top-0 end-0 m-3 rounded-circle shadow" 
+            (click)="themeService.toggleTheme()" style="z-index: 1060; width: 45px; height: 45px; border: 1px solid;">
+      <i class="bi fs-5" [ngClass]="themeService.isDark ? 'bi-sun-fill text-warning' : 'bi-moon-stars-fill text-dark'"></i>
+    </button>
+
+    <div class="d-flex justify-content-center align-items-center min-vh-100">
+      <div class="card glass-card p-5 shadow-lg text-center" style="width: 100%; max-width: 420px; margin: 15px;">
         
-        <div class="mb-3">
-          <label>Email o Usuario</label>
-          <input type="text" class="form-control" [(ngModel)]="loginObj.email" placeholder="ej: final@limpieza.com">
-        </div>
-        
-        <div class="mb-3">
-          <label>Contraseña</label>
-          <input type="password" class="form-control" [(ngModel)]="loginObj.password" placeholder="******">
+        <div class="mb-4">
+          <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3 text-primary shadow-sm">
+            <i class="bi bi-shield-check" style="font-size: 2.5rem; line-height: 1;"></i>
+          </div>
+          <h2 class="fw-bold theme-text" style="letter-spacing: -0.5px;">AZ<br>Limpieza</h2>
+          <p class="theme-text-muted small">Gestión de Servicios</p>
         </div>
 
-        <button class="btn btn-primary w-100" (click)="onLogin()">Ingresar</button>
-        
-        <p *ngIf="errorMessage" class="text-danger mt-3 text-center small">{{ errorMessage }}</p>
+        <form (ngSubmit)="onLogin()">
+          <div class="mb-4 text-start">
+            <label class="form-label fw-semibold theme-text-muted small text-uppercase">Usuario</label>
+            <div class="input-group shadow-sm rounded-3 overflow-hidden theme-border" style="border: 1px solid;">
+              <span class="input-group-text theme-bg border-0 px-3"><i class="bi bi-person theme-text-muted fs-5"></i></span>
+              <input type="text" class="form-control form-control-lg border-0 theme-bg" 
+                     [(ngModel)]="loginObj.username" name="username" placeholder="Ingresa tu usuario" required>
+            </div>
+          </div>
+          
+          <div class="mb-5 text-start">
+            <label class="form-label fw-semibold theme-text-muted small text-uppercase">Contraseña</label>
+            <div class="input-group shadow-sm rounded-3 overflow-hidden theme-border" style="border: 1px solid;">
+              <span class="input-group-text theme-bg border-0 px-3"><i class="bi bi-key theme-text-muted fs-5"></i></span>
+              <input type="password" class="form-control form-control-lg border-0 theme-bg" 
+                     [(ngModel)]="loginObj.password" name="password" placeholder="••••••••" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-glass-primary btn-lg w-100 shadow-sm mt-2 d-flex justify-content-center align-items-center gap-2">
+            Ingresar a la Plataforma <i class="bi bi-arrow-right-short fs-4"></i>
+          </button>
+        </form>
       </div>
     </div>
   `,
-  styles: []
+  styles: [`
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-radius: 24px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 10px 40px rgba(0,0,0, 0.1);
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    .input-group:focus-within { box-shadow: 0 0 0 0.25rem rgba(138, 115, 255, 0.15) !important; }
+    .form-control:focus { box-shadow: none !important; }
+    .btn-glass-primary {
+      background: linear-gradient(135deg, #8a73ff 0%, #6851d8 100%); color: white; border: none; font-weight: 600;
+      border-radius: 12px; transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+    .btn-glass-primary:hover { background: linear-gradient(135deg, #7b62f0 0%, #5841c7 100%); color: white; }
+    .btn-glass-primary:active { transform: scale(0.97); }
+  `]
 })
 export class LoginComponent {
-  
-  // Objeto que coincide con UserDto del Backend (Email, Password)
-  loginObj: any = {
-    email: '',
-    password: ''
-  };
+  loginObj: any = { username: '', password: '' };
 
-  errorMessage: string = '';
-
-  constructor(private http: HttpClient, private router: Router) {}
+  // INYECTAMOS EL SERVICIO DE TEMA (Debe ser public para usarlo en el HTML)
+  constructor(private http: HttpClient, private router: Router, public themeService: ThemeService) {}
 
   onLogin() {
-    // 1. Limpiamos errores previos
-    this.errorMessage = '';
+    if (!this.loginObj.username || !this.loginObj.password) {
+      Swal.fire({ icon: 'warning', title: 'Campos incompletos', text: 'Ingresa tu usuario y contraseña.', confirmButtonColor: '#8a73ff' });
+      return;
+    }
 
-    // 2. Enviamos al Backend
-    //this.http.post('https://localhost:7023/api/Auth/login', this.loginObj).subscribe({
-    // OJO: Es http (sin la 's') y puerto 5000
+    Swal.fire({ title: 'Iniciando sesión', text: 'Conectando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
     this.http.post('http://192.168.100.222:5000/api/Auth/login', this.loginObj).subscribe({
       next: (res: any) => {
-        // SI TODO SALE BIEN:
-        console.log('Respuesta del Login:', res);
-        
-        // Guardamos la sesión (Token falso por ahora)
         localStorage.setItem('currentUser', JSON.stringify(res));
-        
-        // Vamos al Dashboard
-        this.router.navigateByUrl('dashboard');
+        Swal.fire({ icon: 'success', title: `Bienvenido, ${res.user}`, timer: 1500, showConfirmButton: false }).then(() => {
+          this.router.navigate(['/dashboard']);
+        });
       },
-      error: (error) => {
-        // SI FALLA: Mostramos el mensaje exacto que manda el Backend
-        console.error('Error de login:', error);
-        if (error.error && typeof error.error === 'string') {
-            this.errorMessage = error.error; // Ej: "Usuario no encontrado"
-        } else {
-            this.errorMessage = "Error de conexión o credenciales incorrectas.";
-        }
+      error: (err) => {
+        Swal.close(); 
+        let errorMsg = 'Error de conexión.';
+        if (err.status === 400 || err.status === 401) errorMsg = 'Usuario o contraseña incorrectos.';
+        Swal.fire({ icon: 'error', title: 'Acceso Denegado', text: errorMsg, confirmButtonColor: '#dc3545' });
       }
     });
   }
