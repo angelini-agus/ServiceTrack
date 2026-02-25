@@ -56,7 +56,7 @@ La aplicacion esta diseñada bajo una filosofia Mobile-First para facilitar el u
 ## Instalacion
 
 1. Clonar el repositorio:
-   git clone https://github.com/usuario/nombre-del-proyecto.git
+   git clone https://github.com/angelini-agus/ServiceTrack
 
 2. Instalar las dependencias de npm:
    npm install
