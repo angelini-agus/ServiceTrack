@@ -26,10 +26,10 @@ A continuacion se presentan las interfaces principales del sistema:
 
 La aplicacion esta diseñada bajo una filosofia Mobile-First para facilitar el uso del personal en los edificios.
 
-| Escaneo de QR y GPS | Listado de Edificios Asignados | Pedidos de Insumos |
+| Escaneo de QR y GPS | Control de horas personal | Pedidos de Insumos |
 | :---: | :---: | :---: |
 | ![Mobile 1](screenshots/user1.png) | ![Mobile 2](screenshots/user2.png) | ![Mobile 3](screenshots/user3.png) |
-| *Validacion de presencia en sitio* | *Consulta de cronograma personal* | *Gestion de stock desde el edificio* |
+| *Validacion de presencia en sitio* | *Control de horas personal* | *Gestion de stock desde el edificio* |
 
 ## Funcionalidades Principales
 
@@ -39,12 +39,19 @@ La aplicacion esta diseñada bajo una filosofia Mobile-First para facilitar el u
 * **Gestion de Pedidos:** Sistema de solicitud de materiales con agrupacion por edificio para facilitar la logistica.
 * **Modo Adaptativo:** Implementacion de temas claro y oscuro basado en preferencias del usuario.
 
-## Requisitos Tecnicos
+## Tecnologías Utilizadas
 
-* Angular 17.0.0+
-* Node.js 18.x+
-* Bootstrap 5.3+
-* Bibliotecas adicionales: angularx-qrcode, ngx-scanner, sweetalert2.
+* **Frontend:** Angular 17+ (TypeScript)
+* **Backend:** .NET 8.0 / ASP.NET Core (C#)
+* **Base de Datos:** SQL Server / Entity Framework Core
+* **Estilos:** Bootstrap 5 con diseño Glassmorphism personalizado
+* **Validación:** Geolocalización mediante Web API y códigos QR
+
+## Requisitos Técnicos
+
+* **SDK de .NET 8.0** (Para ejecutar el Backend)
+* **Node.js 18.x** (Necesario únicamente como entorno de ejecución para el CLI de Angular)
+* **SQL Server LocalDB** o una instancia activa de base de datos.
 
 ## Instalacion
 
