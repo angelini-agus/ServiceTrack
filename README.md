@@ -15,7 +15,7 @@ A continuacion se presentan las interfaces principales del sistema:
 *Descripcion: Vista principal del administrador con la matriz de horarios semanal.*
 
 ### Liquidacion de Horas
-![Liquidacion Screenshot](screenshots/admins2.png)
+![Liquidacion Screenshot](screenshots/admin2.png)
 *Descripcion: Modulo de calculo automatico de haberes basado en horas registradas.*
 
 ### Gestion de Insumos
