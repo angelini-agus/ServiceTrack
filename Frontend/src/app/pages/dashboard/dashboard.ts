@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { HttpClientModule } from '@angular/common/http';
-import { Router } from '@angular/router'; // <-- Importamos el Router para redireccionar
+import { Router } from '@angular/router'; 
 import { UserService } from '../../services/user';
 import { ProductService } from '../../services/product.service'; 
 import { SupplyRequestService } from '../../services/supply-request.service'; 
@@ -186,7 +186,11 @@ import { ThemeService } from '../../services/theme.service';
                 <tbody>
                     <tr *ngFor="let log of filteredLogs">
                         <td class="theme-border ps-3 fw-bold theme-text">{{ log.date | date:'dd/MM/yyyy' }}</td>
-                        <td class="theme-border theme-text-muted">{{ getConsortiumName(log.consortiumId) }}</td>
+                        
+                        <td class="theme-border theme-text-muted">
+                          {{ getConsortiumName(log.consortiumId) }}
+                          <span *ngIf="isReplacement(log.consortiumId, log.userId)" class="badge bg-warning text-dark ms-2 fw-bold" style="font-size: 0.65rem;" title="Cubrió el turno de otro compañero"><i class="bi bi-arrow-left-right"></i> Reemplazo</span>
+                        </td>
                         <td class="theme-border"><span class="badge bg-success">In: {{ log.entryTime | date:'HH:mm' }}</span></td>
                         <td class="theme-border"><span class="badge" *ngIf="log.exitTime" [ngClass]="log.exitStatus === 'A Tiempo' ? 'bg-success' : 'bg-warning text-dark'">Out: {{ log.exitTime | date:'HH:mm' }}</span></td>
                     </tr>
@@ -198,7 +202,6 @@ import { ThemeService } from '../../services/theme.service';
       </div>
 
       <div *ngIf="currentTab === 'productos'">
-        
         <div *ngIf="isAdmin()" class="row">
           <div class="col-md-4 mb-4">
             <div class="card glass-card p-4 border-0 h-100">
@@ -383,7 +386,7 @@ export class DashboardComponent implements OnInit {
     private requestService: SupplyRequestService,
     private cdr: ChangeDetectorRef, 
     public themeService: ThemeService,
-    private router: Router // <-- INYECTAMOS EL ROUTER ACÁ
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -402,22 +405,9 @@ export class DashboardComponent implements OnInit {
     this.loadData();
   }
 
-  // ---> NUEVA FUNCIÓN PARA CERRAR SESIÓN <---
   logout() {
-    Swal.fire({
-      title: '¿Cerrar sesión?',
-      text: "¿Estás seguro de que deseas salir del sistema?",
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#dc3545',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Sí, salir',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        localStorage.removeItem('currentUser'); // Borramos los datos de memoria
-        this.router.navigate(['/login']);       // Volvemos a la pantalla principal
-      }
+    Swal.fire({ title: '¿Cerrar sesión?', text: "¿Estás seguro de que deseas salir del sistema?", icon: 'question', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Sí, salir', cancelButtonText: 'Cancelar' }).then((result) => {
+      if (result.isConfirmed) { localStorage.removeItem('currentUser'); this.router.navigate(['/login']); }
     });
   }
 
@@ -489,7 +479,7 @@ export class DashboardComponent implements OnInit {
       if (cons) {
         this.disableScanner(); 
         const todayNum = new Date().getDay(); const scheduleToday = cons.schedules.find((s:any) => s.dayOfWeek === todayNum);
-        if(!scheduleToday) { Swal.fire('Día Libre', `No tienes asignado limpieza en ${cons.name} hoy ${this.getDayName(todayNum)}.`, 'warning'); return; }
+        if(!scheduleToday) { Swal.fire('Día Libre', `No hay limpieza programada en ${cons.name} hoy ${this.getDayName(todayNum)}.`, 'warning'); return; }
 
         if (!cons.latitude || !cons.longitude || (cons.latitude == 0 && cons.longitude == 0)) { this.processScan(cons, scheduleToday); return; }
         Swal.fire({ title: 'Validando GPS...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
@@ -546,4 +536,11 @@ export class DashboardComponent implements OnInit {
   }
   
   markAsDelivered(id: number) { this.requestService.markAsDelivered(id).subscribe(() => { Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, icon: 'success', title: 'Entregado' }); this.loadData(); }); }
+
+  // ---> NUEVA FUNCIÓN: VALidador de Reemplazos <---
+  isReplacement(consortiumId: number, userId: number): boolean {
+    const cons = this.consortiums.find(c => c.id === consortiumId);
+    // Si el consorcio existe, tiene un empleado fijo, y ese empleado es distinto al que fichó = REEMPLAZO
+    return cons && cons.assignedUserId !== null && cons.assignedUserId !== userId;
+  }
 }
